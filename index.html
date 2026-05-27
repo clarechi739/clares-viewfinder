@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clare's Viewfinder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Mono:wght@300;400&family=Noto+Serif+TC:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cream: #f5f0e8;
+    --ink: #1a1714;
+    --ink-light: #6b6560;
+    --ink-faint: #c8c2b8;
+    --accent: #c4601a;
+    --accent-light: #f0e0d0;
+    --border: #ddd8ce;
+  }
+
+  html { font-size: 16px; scroll-behavior: smooth; }
+
+  body {
+    background: var(--cream);
+    color: var(--ink);
+    font-family: 'Noto Serif TC', 'Cormorant Garamond', serif;
+    font-weight: 300;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    padding: 3rem 4rem 2rem;
+    border-bottom: 0.5px solid var(--border);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    gap: 2rem;
+  }
+
+  .site-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-light);
+    margin-bottom: 0.5rem;
+  }
+
+  .site-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 300;
+    font-style: italic;
+    letter-spacing: -0.01em;
+    line-height: 1;
+    color: var(--ink);
+  }
+
+  .site-title span {
+    color: var(--accent);
+  }
+
+  .header-meta {
+    text-align: right;
+  }
+
+  .header-meta p {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--ink-light);
+    line-height: 1.8;
+  }
+
+  .header-meta a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  /* ── NAV TABS ── */
+  nav {
+    padding: 0 4rem;
+    border-bottom: 0.5px solid var(--border);
+    display: flex;
+    gap: 0;
+  }
+
+  .nav-tab {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-light);
+    padding: 1rem 1.5rem;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+  }
+
+  .nav-tab:hover { color: var(--ink); }
+  .nav-tab.active {
+    color: var(--ink);
+    border-bottom-color: var(--accent);
+  }
+
+  /* ── SECTIONS ── */
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* ── BOOKS SECTION ── */
+  .books-header {
+    padding: 2rem 4rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .filter-group {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .filter-btn {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border: 0.5px solid var(--border);
+    border-radius: 2px;
+    background: transparent;
+    color: var(--ink-light);
+    cursor: pointer;
+    transition: all 0.18s;
+  }
+
+  .filter-btn:hover {
+    border-color: var(--ink-light);
+    color: var(--ink);
+  }
+
+  .filter-btn.active {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--cream);
+  }
+
+  .book-count {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--ink-faint);
+  }
+
+  /* ── BOOK GRID ── */
+  .book-grid {
+    padding: 0 4rem 4rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 2rem 1.5rem;
+  }
+
+  .book-card {
+    cursor: pointer;
+    animation: fadeIn 0.3s ease forwards;
+  }
+
+  .book-card.hidden {
+    display: none;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .book-cover {
+    width: 100%;
+    aspect-ratio: 2/3;
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+    margin-bottom: 10px;
+    box-shadow: 2px 4px 16px rgba(26,23,20,0.12);
+    transition: transform 0.25s, box-shadow 0.25s;
+  }
+
+  .book-card:hover .book-cover {
+    transform: translateY(-4px) rotate(-0.5deg);
+    box-shadow: 4px 8px 24px rgba(26,23,20,0.18);
+  }
+
+  .cover-bg {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 12px;
+  }
+
+  .cover-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.25;
+    color: inherit;
+  }
+
+  .cover-author {
+    font-size: 10px;
+    font-weight: 300;
+    margin-top: 4px;
+    opacity: 0.75;
+  }
+
+  .book-meta {
+    padding: 0 2px;
+  }
+
+  .book-name {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--ink);
+    letter-spacing: 0.03em;
+    line-height: 1.4;
+    margin-bottom: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .book-author-sm {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: var(--ink-light);
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .type-tag {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border-radius: 1px;
+    margin-top: 5px;
+  }
+
+  /* ── NEWS SECTION ── */
+  .news-list {
+    padding: 2rem 4rem 4rem;
+    max-width: 720px;
+  }
+
+  .news-item {
+    padding: 1.5rem 0;
+    border-bottom: 0.5px solid var(--border);
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 1.5rem;
+    align-start: top;
+    animation: fadeIn 0.3s ease forwards;
+  }
+
+  .news-date {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-faint);
+    letter-spacing: 0.1em;
+    padding-top: 3px;
+  }
+
+  .news-source {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+
+  .news-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 1.3;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+
+  .news-title a {
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 0.5px solid var(--border);
+    transition: border-color 0.2s;
+  }
+
+  .news-title a:hover { border-color: var(--accent); }
+
+  .news-summary {
+    font-size: 13px;
+    color: var(--ink-light);
+    line-height: 1.7;
+    font-family: 'Noto Serif TC', serif;
+    font-weight: 300;
+  }
+
+  /* ── EMPTY STATE ── */
+  .empty-state {
+    padding: 4rem;
+    text-align: center;
+    color: var(--ink-faint);
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 18px;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 2rem 4rem;
+    border-top: 0.5px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  footer p {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    color: var(--ink-faint);
+  }
+
+  @media (max-width: 640px) {
+    header { padding: 2rem; grid-template-columns: 1fr; }
+    .header-meta { text-align: left; }
+    nav { padding: 0 2rem; }
+    .books-header, .book-grid, .news-list { padding-left: 2rem; padding-right: 2rem; }
+    .book-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 1.5rem 1rem; }
+    footer { padding: 1.5rem 2rem; flex-direction: column; gap: 0.5rem; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="site-eyebrow">童書・版權書訊</div>
+    <h1 class="site-title">Clare's <span>Viewfinder</span></h1>
+  </div>
+  <div class="header-meta">
+    <p>BY CLARE</p>
+    <p><a href="mailto:clare@grayhawk-agency.com">clare@grayhawk-agency.com</a></p>
+  </div>
+</header>
+
+<nav>
+  <button class="nav-tab active" onclick="switchTab('books', this)">📚 書訊</button>
+  <button class="nav-tab" onclick="switchTab('news', this)">📰 產業新聞</button>
+</nav>
+
+<!-- BOOKS SECTION -->
+<div id="books" class="section active">
+  <div class="books-header">
+    <div class="filter-group">
+      <button class="filter-btn active" onclick="filterBooks('all', this)">全部</button>
+      <button class="filter-btn" onclick="filterBooks('pic', this)">繪本</button>
+      <button class="filter-btn" onclick="filterBooks('mg', this)">兒童小說</button>
+      <button class="filter-btn" onclick="filterBooks('ya', this)">青少年小說</button>
+      <button class="filter-btn" onclick="filterBooks('nf', this)">知識類</button>
+      <button class="filter-btn" onclick="filterBooks('cc', this)">漫畫</button>
+    </div>
+    <span class="book-count" id="book-count"></span>
+  </div>
+
+  <div class="book-grid" id="book-grid">
+    <!-- Books injected by JS -->
+  </div>
+</div>
+
+<!-- NEWS SECTION -->
+<div id="news" class="section">
+  <div class="news-list" id="news-list">
+    <!-- News injected by JS -->
+  </div>
+</div>
+
+<footer>
+  <p>Clare's Viewfinder — 童書版權書訊</p>
+  <p>clare@grayhawk-agency.com</p>
+</footer>
+
+<script>
+const BOOKS = [
+  { type:'pic', title:'NIGHT RIDE', author:'Christopher Myers', bg:'#c8daf0', fg:'#0d2a4a', tag:'繪本', tagBg:'#e8f0f8', tagFg:'#1a3a5c' },
+  { type:'pic', title:'GOLDFINCHES', author:'Mary Oliver / Melissa Sweet', bg:'#b8e0b0', fg:'#153a10', tag:'繪本', tagBg:'#eef8ee', tagFg:'#1a4a15' },
+  { type:'pic', title:'MEI MEI THE BUNNY', author:'Laufey / Lauren O'Hara', bg:'#f5c8d0', fg:'#4a0d18', tag:'繪本', tagBg:'#fceef0', tagFg:'#5a1020' },
+  { type:'pic', title:'ONE WITH YOU', author:'Loveis Wise', bg:'#d8c8f0', fg:'#2a1050', tag:'繪本', tagBg:'#f0ecfc', tagFg:'#2a1050' },
+  { type:'pic', title:'QUEEN OF DAY', author:'Jacob Sager Weinstein / Victo Ngai', bg:'#f0d8a8', fg:'#3a2000', tag:'繪本', tagBg:'#fdf5e0', tagFg:'#3a2000' },
+  { type:'pic', title:'COWGIRL', author:'Isa Beniston', bg:'#f0c8a0', fg:'#3a1800', tag:'繪本', tagBg:'#fdf0e0', tagFg:'#3a1800' },
+  { type:'pic', title:'EASTER BUDDY', author:'Ally Condie / Denis Angelov', bg:'#c8f0c8', fg:'#0d3a0d', tag:'繪本', tagBg:'#eefcee', tagFg:'#0d3a0d' },
+  { type:'mg', title:'THE BIG BAD WOLF MURDER', author:'PG Bell', bg:'#c8b0a0', fg:'#2a1000', tag:'兒童小說', tagBg:'#f5ede8', tagFg:'#3a1800' },
+  { type:'mg', title:'NIGHTMARE LEAGUE', author:'Reece Carter', bg:'#a8b8d8', fg:'#0d1a3a', tag:'兒童小說', tagBg:'#e8eef8', tagFg:'#0d1a3a' },
+  { type:'mg', title:'ALONE IN THE CITY', author:'David Nel·lo / Cristina Losantos', bg:'#d0c8b0', fg:'#2a2000', tag:'兒童小說', tagBg:'#f5f0e0', tagFg:'#2a2000' },
+  { type:'mg', title:'BEASTS', author:'Cappelen', bg:'#b8c8b0', fg:'#152010', tag:'兒童小說', tagBg:'#eef4ec', tagFg:'#152010' },
+  { type:'mg', title:'GAMES OF THE GODS', author:'Nikki St. Crowe & Patricia Riley', bg:'#d0b0c8', fg:'#2a0a20', tag:'兒童小說', tagBg:'#f5e8f2', tagFg:'#2a0a20' },
+  { type:'ya', title:'THE MELTING POINT', author:'Annukka Salama', bg:'#b0b8d8', fg:'#0a1230', tag:'青少年小說', tagBg:'#e8ecf8', tagFg:'#0a1230' },
+  { type:'ya', title:'AMERICAN NIGHTMARE', author:'Alexandra Kyllingstad', bg:'#d8a8a0', fg:'#2a0800', tag:'青少年小說', tagBg:'#fceee8', tagFg:'#2a0800' },
+  { type:'ya', title:'INDOOR GIRL', author:'Krystle Brantzeg', bg:'#f0d0b0', fg:'#3a1800', tag:'青少年小說', tagBg:'#fdf0e0', tagFg:'#3a1800' },
+  { type:'ya', title:'GILDED WINGS', author:'Emily Thiede', bg:'#f0d890', fg:'#3a2800', tag:'青少年小說', tagBg:'#fdf8e0', tagFg:'#3a2800' },
+  { type:'ya', title:'THE ECHO OF EMPIRES', author:'Shameen Abubakar', bg:'#c0a8c8', fg:'#1a0820', tag:'青少年小說', tagBg:'#f2eaf5', tagFg:'#1a0820' },
+  { type:'nf', title:'WOW IN THE WORLD', author:'Mindy Thomas & Guy Raz', bg:'#f0c870', fg:'#2a1800', tag:'知識類', tagBg:'#fdf5e0', tagFg:'#2a1800' },
+  { type:'nf', title:'GROWING UP GREAT!', author:'Sourcebooks', bg:'#b0d8c8', fg:'#0d2820', tag:'知識類', tagBg:'#e8f5f0', tagFg:'#0d2820' },
+  { type:'cc', title:'BARBARIC', author:'Mike Moreci / Nathan Gooden', bg:'#a8c0a8', fg:'#0d200d', tag:'漫畫', tagBg:'#eaf3ea', tagFg:'#0d200d' },
+  { type:'cc', title:'HOWLIDAY INN', author:'James Howe / Andrew Donkin', bg:'#d0b8a0', fg:'#2a1400', tag:'漫畫', tagBg:'#f5ede0', tagFg:'#2a1400' },
+  { type:'cc', title:'SHOCK CITY PUNKS', author:'Aaron Alexovich', bg:'#b8a8c8', fg:'#150820', tag:'漫畫', tagBg:'#f0ecf8', tagFg:'#150820' },
+  { type:'cc', title:'THE SUMMER I TURNED PRETTY', author:'Jenny Han', bg:'#f0b0c0', fg:'#3a0818', tag:'漫畫', tagBg:'#fce8ec', tagFg:'#3a0818' },
+];
+
+const NEWS = [
+  {
+    date: '2026.05',
+    source: 'Publishers Lunch',
+    title: 'Netflix 確認改編 Barbaric 圖像小說',
+    summary: 'Vault Comics 旗下血腥奇幻系列 BARBARIC 已確認由 Netflix 改編，主創為奧斯卡入圍編劇 Sheldon Turner 及 Robert Rovner。系列累計銷售逾60萬冊。',
+    url: '#'
+  },
+  {
+    date: '2026.05',
+    source: 'Ahlback Agency',
+    title: 'THE MELTING POINT 德國版競標落槌',
+    summary: 'Annukka Salama 的 Queer YA 冰球愛情小說德國版由 Bastei Lübbe 以競標方式拿下，成為第六個外語版。作者連續兩年獲得芬蘭 Queer Book of the Year。',
+    url: '#'
+  },
+  {
+    date: '2026.05',
+    source: 'JGLM',
+    title: 'THE ESCAPE GAME 六週後再度登上 NYT #1',
+    summary: 'Marissa Meyer 與 Tamara Moss 合著的 YA 懸疑小說出版六週後再度回到 NYT 暢銷榜首位，同時也是 Indie Bestseller #1。',
+    url: '#'
+  },
+];
+
+function renderBooks(filter) {
+  const grid = document.getElementById('book-grid');
+  const filtered = filter === 'all' ? BOOKS : BOOKS.filter(b => b.type === filter);
+  document.getElementById('book-count').textContent = filtered.length + ' 本';
+
+  grid.innerHTML = filtered.map((b, i) => `
+    <div class="book-card" style="animation-delay:${i * 0.03}s">
+      <div class="book-cover">
+        <div class="cover-bg" style="background:${b.bg}; color:${b.fg}">
+          <div class="cover-title">${b.title}</div>
+          <div class="cover-author" style="color:${b.fg}">${b.author}</div>
+        </div>
+      </div>
+      <div class="book-meta">
+        <div class="book-name">${b.title}</div>
+        <div class="book-author-sm">${b.author}</div>
+        <span class="type-tag" style="background:${b.tagBg};color:${b.tagFg}">${b.tag}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderNews() {
+  const list = document.getElementById('news-list');
+  if (NEWS.length === 0) {
+    list.innerHTML = '<div class="empty-state">尚無產業新聞</div>';
+    return;
+  }
+  list.innerHTML = NEWS.map((n, i) => `
+    <div class="news-item" style="animation-delay:${i * 0.05}s">
+      <div class="news-date">${n.date}</div>
+      <div>
+        <div class="news-source">${n.source}</div>
+        <div class="news-title">
+          ${n.url && n.url !== '#' ? `<a href="${n.url}" target="_blank">${n.title}</a>` : n.title}
+        </div>
+        <div class="news-summary">${n.summary}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterBooks(type, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderBooks(type);
+}
+
+function switchTab(tab, btn) {
+  document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(tab).classList.add('active');
+}
+
+renderBooks('all');
+renderNews();
+</script>
+</body>
+</html>
